@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Swiper demo</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+    />
+    <!-- Link Swiper's CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css">
+    <script src="js/jquery-2.1.0.min.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <!-- Demo styles -->
+    <style>
+        html,
+        body {
+            position: relative;
+            height: 100%;
+        }
+
+        body {
+
+            background: #eee;
+            font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            color: #000;
+            margin: 0;
+            padding: 0;
+        }
+
+        .swiper {
+            width: 90%;
+            padding-top: 50px;
+            padding-bottom: 50px;
+        }
+
+        .swiper-slide {
+            background-position: center;
+            background-size: cover;
+            width: 300px;
+            height: 300px;
+        }
+
+        .swiper-slide img {
+            display: block;
+            width: 90%;
+        }
+        .con{
+           margin-top: auto;
+        }
+    </style>
+    <script>
+
+
+        var regionTitle = new Array();
+        var counter = new Array();
+        var regionData = new Array();
+        $(function () {
+
+            $.ajax({
+                type: "GET",
+                url: "js/fast_food_resturant.json",
+                dataType: "json",
+                cache: false,
+                success: showdata,
+                error: function () {
+                    alert("error");
+                }
+            });
+        });
+
+        function showdata(data) {
+            console.log(data);
+            
+
+            for (var i = 0; i < data.length; i++) {
+                var getRegion = data[i].Address.substring(0, data[i].Address.indexOf("區", 0) + 1);
+                console.log(getRegion);
+
+                if (data[i].Address.substring(0, data[i].Address.indexOf("市", 0) + 1) == "臺中市") {
+                    if (getRegion == "") {
+                        getRegion = "其它";
+                    }
+
+                    if (counter[getRegion] == undefined) {
+                        counter[getRegion] = regionData.length;
+                        regionData.push(new Array());
+                        regionTitle[counter[getRegion]] = getRegion;
+                    }
+                    regionData[counter[getRegion]].push(data[i]);
+                }
+                
+            }
+            console.log(regionTitle);
+            console.log(counter);
+            console.log(regionData);
+            $("#myRegion").empty();
+            for (var i = 0; i < regionTitle.length; i++) {
+                var pageName = "";
+                var pagePic = "";
+                var pageSetDate = "";
+                var pageAddress = "";
+
+                for (var j = 0; j < regionData[i].length; j++) {
+                    pageName += regionData[i][j]["Name"] + "|";
+                    // pagePic += regionData[i][j]["Picture1"] + "|";
+                    pageSetDate += regionData[i][j]["SetDate"] + "|";
+                    pageAddress += regionData[i][j]["Address"] + "|";
+                }
+
+                var strHTML =
+                    '<li><a href="#show" data-region="' + regionTitle[i] + '" page-name="' + pageName + '" page-setdate="' + pageSetDate + '" page-pic="' + pagePic + '" page-add="' + pageAddress + '">' + regionTitle[i] + '三大速食業者設點資料<span class="ui-li-count">' + regionData[counter[regionTitle[i]]].length + '</span></a></li>';
+                $("#myRegion").append(strHTML);
+            }
+            $("#myRegion").listview("refresh");
+
+            $("a", $("#myRegion")).bind("click", function () {
+                console.log($(this).attr("data-region"));
+                getItem($(this).attr("data-region"), $(this).attr("page-name"), $(this).attr("page-pic"), $(this).attr("page-setdate"), $(this).attr("page-add"));
+              
+            });
+        }
+        function getItem(region, pagename, pagepic, pagesetdate, pageaddress) {
+            $("#show h1").html(region + "三大速食業者設點資料");
+            aryName = pagename.split("|");
+            arypic = pagepic.split("|");
+            arysetdate = pagesetdate.split("|");
+            aryaddress = pageaddress.split("|");
+            console.log(aryName);
+            console.log(arypic);
+            console.log(arysetdate);
+            $("#mcd").empty();
+            $("#kfc").empty();
+            $("#mos").empty();
+            for (var i = 0; i < aryName.length - 1; i++) {
+                var mypic
+                if (aryName[i] == "麥當勞") {
+                    mypic = "images/McDonald.png";
+                    var strHTML = '<div class="swiper-slide"><img src="' + mypic + '" alt="" /><p>' + aryName[i] +'<br> '+aryaddress[i] +'</br></p><p>設立日期:' + arysetdate[i] + '</p></div>';
+                $("#mcd").append(strHTML); 
+                } else if (aryName[i] == "肯德基") {
+                    mypic = "images/KFC.png";
+                    var strHTML = '<div class="swiper-slide"><img src="' + mypic + '" alt=""/><p>' + aryName[i] +'<br> '+aryaddress[i] +'</br></p><p>設立日期:' + arysetdate[i] + '</p></div>';
+                $("#kfc").append(strHTML); 
+                } else if (aryName[i] == "摩斯漢堡") {
+                    mypic = "images/Mos_burger.png"
+                    var strHTML = '<div class="swiper-slide"><img src="' + mypic + '" alt=""/><p>' + aryName[i] +'<br> '+aryaddress[i] +'</br></p><p>設立日期:' + arysetdate[i] + '</p></div>';
+                $("#mos").append(strHTML); 
+                }
+                // var strHTML = '<li><a href="#"><img src="' + mypic + '" alt="" /><h2>' + aryName[i] + '</h2><p>設立日期:' + arysetdate[i] + '</p><p>' + aryaddress[i] + '</p></a></li>';
+                
+                
+            }
+            // $("#myRegion01").listview("refresh"); 
+           
+           
+        }
+
+    </script>
+ 
+</head>
+
+<body class="con">
+    <div data-role="page" id="home">
+        <div data-role="header" data-theme="b">
+            <h1>頁首</h1>
+        </div>
+        <div data-role="main" class="ui-content">
+            <ul data-role="listview" data-inset="true" id="myRegion">
+                <li>
+                    <a href="">
+                        <span class="ui-li-count">99</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div data-role="footer" data-theme="b" data-position="fixed">
+            <h1>頁尾</h1>
+        </div>
+    </div>
+
+    <div data-role="page" id="show" >
+        <div data-role="header" data-theme="b">
+            <h1>旅館列表</h1>
+        </div>
+        <div data-role="main" class="ui-content">
+            <!-- Swiper -->
+            <div class="swiper mySwiper">
+                <div class="swiper-wrapper" id="mcd">
+                    <div class="swiper-slide">
+                        <img src="https://swiperjs.com/demos/images/nature-1.jpg" />
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+
+            <div class="swiper mySwiper">
+                <div class="swiper-wrapper" id="kfc">
+                    <div class="swiper-slide">
+                        <img src="https://swiperjs.com/demos/images/nature-1.jpg" />
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+
+            <div class="swiper mySwiper">
+                <div class="swiper-wrapper" id="mos">
+                    <div class="swiper-slide">
+                        <img src="https://swiperjs.com/demos/images/nature-1.jpg" />
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </div>
+
+        <div data-role="footer" data-theme="b" data-position="fixed">
+            <h1>頁尾</h1>
+        </div>
+    </div>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+
+    <!-- Initialize Swiper -->
+    <script>
+        $(document).ready(function () {
+  //initialize swiper when document ready
+  var swiper = new Swiper(".mySwiper", {
+            effect: "coverflow",
+            grabCursor: true,
+            centeredSlides: true,
+            slidesPerView: "auto",
+            coverflowEffect: {
+                rotate: 50,
+                stretch: 0,
+                depth: 100,
+                modifier: 1,
+                slideShadows: true,
+            },
+            pagination: {
+                el: ".swiper-pagination",
+            },
+        });
+});
+       
+    </script>
+</body>
+
+</html>
